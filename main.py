@@ -28,7 +28,7 @@ X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, train_
 # 3.-- EVALUATION AND ANALYSIS ----
 # ---------------------------------
 
-# // MODEL TRAINING \\
+# // MODEL TRAINING AND TESTING \\
 
 # -- Support Vector Machine --
 poly = svm.SVC(kernel="poly", degree=3, C=1).fit(X_train, y_train)
@@ -38,21 +38,19 @@ poly_pred = poly.predict(X_test)
 rbf_pred = rbf.predict(X_test)
 
 # -- Random Forest --
-rf = RandomForestClassifier()
-rf.fit(X_train, y_train)
+rf = RandomForestClassifier().fit(X_train, y_train)
+
+rf_pred = rf.predict(X_test)
+
 
 # // OVERALL ACCURACY \\
 
-# Train SVM with polynomial kernel
 poly_accuracy = accuracy_score(y_test, poly_pred)
 print(f"Accuracy (Polynomial Kernel): {(poly_accuracy * 100):.2f}")
 
-# Train SVM with RBF kernel
 rbf_accuracy = accuracy_score(y_test, rbf_pred)
 print(f"Accuracy (RBF Kernel): {(rbf_accuracy * 100):.2f}")
 
-# Train Random Forest
-rf_pred = rf.predict(X_test)
 rf_accuracy = accuracy_score(y_test, rf_pred)
 print(f"Accuracy (Random Forest): {(rf_accuracy * 100):.2f}")
 
@@ -83,34 +81,43 @@ print(f"Mean Per-Class Accuracy (Random Forest): {rf_mPCA:.2f}")
 # // CONFUSION MATRIX \\
 # TODO: import assignment point cloud with the ground truth labels
 
-# confusion_matrix(y_test, y_pred=)
+# Confusion matrices plotting
+models = [('Polynomial Kernel SVM', poly_pred), ('RBF Kernel SVM', rbf_pred), ('Random Forest', rf_pred)]
+for (model_name, model_pred) in models:
+    plt.figure(figsize=(8, 6))
+    cm = confusion_matrix(y_test, model_pred)
+    sns.heatmap(cm, annot=True, fmt='d')
+    plt.title(f'Confusion Matrix for {model_name}')
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+    plt.show()
 
 # ---------------------------------
 # ----------- PLOTTING ------------
 # ---------------------------------
 
-# Prepare data for plotting
-scores_data = {
-    'Model': ['SVM (Polynomial Kernel)', 'SVM (RBF Kernel)', 'Random Forest'],
-    'Accuracy': [poly_accuracy * 100, rbf_accuracy * 100, rf_accuracy * 100],
-    'Mean Per-Class Accuracy': [poly_mPCA, rbf_mPCA, rf_mPCA]
-}
-
-df_scores = pd.DataFrame(scores_data)
-
-# Melt the DataFrame to plot with seaborn
-df_melted = df_scores.melt(id_vars="Model", var_name="Metric", value_name="Value")
-
-# Create the plot
-plt.figure(figsize=(10, 6))
-sns.barplot(x='Model', y='Value', hue='Metric', data=df_melted)
-plt.title('Comparison of SVM Kernels and Random Forest on Iris Dataset')
-plt.ylabel('% Score')
-plt.xlabel('Model')
-plt.ylim(0, 100)
-plt.legend(title='Metric')
-plt.tight_layout()
-plt.show()
+# # Prepare data for plotting
+# scores_data = {
+#     'Model': ['SVM (Polynomial Kernel)', 'SVM (RBF Kernel)', 'Random Forest'],
+#     'Accuracy': [poly_accuracy * 100, rbf_accuracy * 100, rf_accuracy * 100],
+#     'Mean Per-Class Accuracy': [poly_mPCA, rbf_mPCA, rf_mPCA]
+# }
+#
+# df_scores = pd.DataFrame(scores_data)
+#
+# # Melt the DataFrame to plot with seaborn
+# df_melted = df_scores.melt(id_vars="Model", var_name="Metric", value_name="Value")
+#
+# # Create the plot
+# plt.figure(figsize=(10, 6))
+# sns.barplot(x='Model', y='Value', hue='Metric', data=df_melted)
+# plt.title('Comparison of SVM Kernels and Random Forest on Iris Dataset')
+# plt.ylabel('% Score')
+# plt.xlabel('Model')
+# plt.ylim(0, 100)
+# plt.legend(title='Metric')
+# plt.tight_layout()
+# plt.show()
 
 # # Loading the iris dataset
 # iris = sns.load_dataset("iris")
