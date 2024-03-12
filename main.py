@@ -5,17 +5,19 @@ import sklearn.model_selection as model_selection
 # from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
+from sklearn.preprocessing import LabelEncoder
+
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
+
 
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-
-# // LOAD THE DATASET HERE \\
 def assign_label(filename):
     # Extract the base name and convert to an integer to assign labels
     base_name = int(filename.split('.')[0])
@@ -44,10 +46,13 @@ def load_point_cloud_data(folder_path):
     xyz_files = [f for f in os.listdir(folder_path) if f.endswith('.xyz')]
     return pd.concat([load_xyz_file(os.path.join(folder_path, file)) for file in xyz_files], ignore_index=True)
 
+# // LOAD THE DATASET HERE \\
+
 # Specify the path to your folder
 folder_path = 'GEO5017-A2-Classification/pointclouds-500/pointclouds-500/'
 point_cloud_data = load_point_cloud_data(folder_path)
 
+# -- Visualise the data --
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 categories = point_cloud_data['label'].unique()
@@ -61,45 +66,47 @@ ax.set_zlabel('Z')
 plt.title('Urban Object Point Clouds')
 plt.show()
 
+# Define X - features, AND y - labels:
+X = point_cloud_data[['x', 'y', 'z']]
+y = point_cloud_data['label']
 
-# # iris = datasets.load_iris()
-# # X = iris.data[:, :2]
-# # y = iris.target
-#
-# # // Data training vs. test split \\ #
-# # TODO: Tweak parameters to explore different results
-# X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, train_size=0.60, test_size=0.40,
-#                                                                     random_state=101)
-#
-# # ---------------------------------
-# # 3.-- EVALUATION AND ANALYSIS ----
-# # ---------------------------------
-#
-# # // MODEL TRAINING AND TESTING \\
-#
-# # -- Support Vector Machine --
-# poly = svm.SVC(kernel="poly", degree=3, C=1).fit(X_train, y_train)
-# rbf = svm.SVC(kernel="rbf", gamma=0.5, C=0.1).fit(X_train, y_train)
-#
-# poly_pred = poly.predict(X_test)
-# rbf_pred = rbf.predict(X_test)
-#
-# # -- Random Forest --
-# rf = RandomForestClassifier().fit(X_train, y_train)
-#
-# rf_pred = rf.predict(X_test)
-#
-#
-# # // OVERALL ACCURACY \\
-#
-# poly_accuracy = accuracy_score(y_test, poly_pred)
-# print(f"Accuracy (Polynomial Kernel): {(poly_accuracy * 100):.2f}")
-#
-# rbf_accuracy = accuracy_score(y_test, rbf_pred)
-# print(f"Accuracy (RBF Kernel): {(rbf_accuracy * 100):.2f}")
-#
-# rf_accuracy = accuracy_score(y_test, rf_pred)
-# print(f"Accuracy (Random Forest): {(rf_accuracy * 100):.2f}")
+le = LabelEncoder() # Use numerical indexing, in case it is required
+y_encoded = le.fit_transform(y)
+
+# // Data training vs. test split \\ #
+# TODO: Tweak parameters to explore different results
+X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y_encoded, train_size=0.60, test_size=0.40,
+                                                                    random_state=101)
+
+# ---------------------------------
+# 3.-- EVALUATION AND ANALYSIS ----
+# ---------------------------------
+
+# // MODEL TRAINING AND TESTING \\
+
+# -- Support Vector Machine --
+poly = svm.SVC(kernel="poly", degree=3, C=1).fit(X_train, y_train)
+rbf = svm.SVC(kernel="rbf", gamma=0.5, C=0.1).fit(X_train, y_train)
+
+poly_pred = poly.predict(X_test)
+rbf_pred = rbf.predict(X_test)
+
+# -- Random Forest --
+rf = RandomForestClassifier().fit(X_train, y_train)
+
+rf_pred = rf.predict(X_test)
+
+
+# // OVERALL ACCURACY \\
+
+poly_accuracy = accuracy_score(y_test, poly_pred)
+print(f"Accuracy (Polynomial Kernel): {(poly_accuracy * 100):.2f}")
+
+rbf_accuracy = accuracy_score(y_test, rbf_pred)
+print(f"Accuracy (RBF Kernel): {(rbf_accuracy * 100):.2f}")
+
+rf_accuracy = accuracy_score(y_test, rf_pred)
+print(f"Accuracy (Random Forest): {(rf_accuracy * 100):.2f}")
 #
 # # // MEAN PER-CLASS ACCURACY \\
 # def mean_per_class_accuracy(y_true, y_pred):
