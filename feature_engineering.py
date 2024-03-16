@@ -47,8 +47,8 @@ class Slice_z(Slice):
 
 # Parent class for Slices_x, Slices_y and Slices_z
 class Slices:
-    def __init__(self, X, Y, Z, points, slice_number, feture_type):
-        self.feature_type = feture_type
+    def __init__(self, X, Y, Z, points, slice_number, feature_type):
+        self.feature_type = feature_type
         self.slice_number = slice_number
         self.points = points
 
@@ -72,51 +72,69 @@ class Slices:
 
 
 class Slices_x(Slices):
-    def __init__(self, X, Y, Z, points, slice_number, feture_type):
-        super().__init__(X, Y, Z, points, slice_number, feture_type)
+    def __init__(self, X, Y, Z, points, slice_number, feature_type):
+        super().__init__(X, Y, Z, points, slice_number, feature_type)
 
     def get_feature(self):
         slices_x = [Slice_x(self.X_MIN + (i + 1) * self.X_STEP) for i in range(self.slice_number)]
         Slices_x.fill_points(self, slices_x)
 
         slices_x_den = [len(slice.points) / self.bbox_volume for slice in slices_x]
-        return slices_x_den
+        slices_x_num = [len(slice.points) for slice in slices_x]
+        if self.feature_type == "density":
+            return slices_x_den
+        elif self.feature_type == "number":
+            return slices_x_num
+        elif self.feature_type == "both":
+            return slices_x_den + slices_x_num
 
 
 class Slices_y(Slices):
-    def __init__(self, X, Y, Z, points, slice_number, feture_type):
-        super().__init__(X, Y, Z, points, slice_number, feture_type)
+    def __init__(self, X, Y, Z, points, slice_number, feature_type):
+        super().__init__(X, Y, Z, points, slice_number, feature_type)
 
     def get_feature(self):
         slices_y = [Slice_y(self.Y_MIN + (i + 1) * self.Y_STEP) for i in range(self.slice_number)]
         Slices_y.fill_points(self, slices_y)
 
         slices_y_den = [len(slice.points) / self.bbox_volume for slice in slices_y]
-        return slices_y_den
+        slices_y_num = [len(slice.points) for slice in slices_y]
+        if self.feature_type == "density":
+            return slices_y_den
+        elif self.feature_type == "number":
+            return slices_y_num
+        elif self.feature_type == "both":
+            return slices_y_den + slices_y_num
 
 
 class Slices_z(Slices):
-    def __init__(self, X, Y, Z, points, slice_number, feture_type):
-        super().__init__(X, Y, Z, points, slice_number, feture_type)
+    def __init__(self, X, Y, Z, points, slice_number, feature_type):
+        super().__init__(X, Y, Z, points, slice_number, feature_type)
 
     def get_feature(self):
         slices_z = [Slice_z(self.Z_MIN + (i + 1) * self.Z_STEP) for i in range(self.slice_number)]
         Slices_z.fill_points(self, slices_z)
 
         slices_z_den = [len(slice.points) / self.bbox_volume for slice in slices_z]
-        return slices_z_den
+        slices_z_num = [len(slice.points) for slice in slices_z]
+        if self.feature_type == "density":
+            return slices_z_den
+        elif self.feature_type == "number":
+            return slices_z_num
+        elif self.feature_type == "both":
+            return slices_z_den + slices_z_num
 
 
-def get_feature(file_path, slice_number_x, slice_number_y, slice_number_z, feture_type):
+def get_feature(file_path, slice_number_x, slice_number_y, slice_number_z, feature_type):
     with open(file_path, mode="r") as file:
         lines = [line.strip().split() for line in file.readlines()]
         coors = np.array(lines).astype(float)
         X, Y, Z = coors[:, 0], coors[:, 1], coors[:, 2]
         points = [Point(coor[0], coor[1], coor[2]) for coor in coors]
 
-    slices_x = Slices_x(X, Y, Z, points, slice_number_x, feture_type)
-    slices_y = Slices_y(X, Y, Z, points, slice_number_y, feture_type)
-    slices_z = Slices_z(X, Y, Z, points, slice_number_z, feture_type)
+    slices_x = Slices_x(X, Y, Z, points, slice_number_x, feature_type)
+    slices_y = Slices_y(X, Y, Z, points, slice_number_y, feature_type)
+    slices_z = Slices_z(X, Y, Z, points, slice_number_z, feature_type)
     return slices_x.get_feature() + slices_y.get_feature() + slices_z.get_feature()
 
 
