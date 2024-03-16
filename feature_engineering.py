@@ -47,17 +47,17 @@ class Slice_z(Slice):
 
 # Parent class for Slices_x, Slices_y and Slices_z
 class Slices:
-    def __init__(self, X, Y, Z, points, slice_layer, feture_type):
+    def __init__(self, X, Y, Z, points, slice_number, feture_type):
         self.feature_type = feture_type
-        self.slice_layer = slice_layer
+        self.slice_number = slice_number
         self.points = points
 
         self.X_MIN, self.Y_MIN, self.Z_MIN = min(X), min(Y), min(Z)
         self.X_MAX, self.Y_MAX, self.Z_MAX = max(X), max(Y), max(Z)
 
-        self.X_STEP = (self.X_MAX - self.X_MIN) / slice_layer
-        self.Y_STEP = (self.Y_MAX - self.Y_MIN) / slice_layer
-        self.Z_STEP = (self.Z_MAX - self.Z_MIN) / slice_layer
+        self.X_STEP = (self.X_MAX - self.X_MIN) / slice_number
+        self.Y_STEP = (self.Y_MAX - self.Y_MIN) / slice_number
+        self.Z_STEP = (self.Z_MAX - self.Z_MIN) / slice_number
 
         self.step_volume = self.X_STEP * self.Y_STEP * self.Z_STEP
         self.bbox_volume = (self.X_MAX - self.X_MIN) * (self.Y_MAX - self.Y_MIN) * (self.Z_MAX - self.Z_MIN)
@@ -72,11 +72,11 @@ class Slices:
 
 
 class Slices_x(Slices):
-    def __init__(self, X, Y, Z, points, slice_layer, feture_type):
-        super().__init__(X, Y, Z, points, slice_layer, feture_type)
+    def __init__(self, X, Y, Z, points, slice_number, feture_type):
+        super().__init__(X, Y, Z, points, slice_number, feture_type)
 
     def get_feature(self):
-        slices_x = [Slice_x(self.X_MIN + (i + 1) * self.X_STEP) for i in range(self.slice_layer)]
+        slices_x = [Slice_x(self.X_MIN + (i + 1) * self.X_STEP) for i in range(self.slice_number)]
         Slices_x.fill_points(self, slices_x)
 
         slices_x_den = [len(slice.points) / self.bbox_volume for slice in slices_x]
@@ -84,11 +84,11 @@ class Slices_x(Slices):
 
 
 class Slices_y(Slices):
-    def __init__(self, X, Y, Z, points, slice_layer, feture_type):
-        super().__init__(X, Y, Z, points, slice_layer, feture_type)
+    def __init__(self, X, Y, Z, points, slice_number, feture_type):
+        super().__init__(X, Y, Z, points, slice_number, feture_type)
 
     def get_feature(self):
-        slices_y = [Slice_y(self.Y_MIN + (i + 1) * self.Y_STEP) for i in range(self.slice_layer)]
+        slices_y = [Slice_y(self.Y_MIN + (i + 1) * self.Y_STEP) for i in range(self.slice_number)]
         Slices_y.fill_points(self, slices_y)
 
         slices_y_den = [len(slice.points) / self.bbox_volume for slice in slices_y]
@@ -96,27 +96,27 @@ class Slices_y(Slices):
 
 
 class Slices_z(Slices):
-    def __init__(self, X, Y, Z, points, slice_layer, feture_type):
-        super().__init__(X, Y, Z, points, slice_layer, feture_type)
+    def __init__(self, X, Y, Z, points, slice_number, feture_type):
+        super().__init__(X, Y, Z, points, slice_number, feture_type)
 
     def get_feature(self):
-        slices_z = [Slice_z(self.Z_MIN + (i + 1) * self.Z_STEP) for i in range(self.slice_layer)]
+        slices_z = [Slice_z(self.Z_MIN + (i + 1) * self.Z_STEP) for i in range(self.slice_number)]
         Slices_z.fill_points(self, slices_z)
 
         slices_z_den = [len(slice.points) / self.bbox_volume for slice in slices_z]
         return slices_z_den
 
 
-def get_feature(file_path, slice_layer_x, slice_layer_y, slice_layer_z, feture_type):
+def get_feature(file_path, slice_number_x, slice_number_y, slice_number_z, feture_type):
     with open(file_path, mode="r") as file:
         lines = [line.strip().split() for line in file.readlines()]
         coors = np.array(lines).astype(float)
         X, Y, Z = coors[:, 0], coors[:, 1], coors[:, 2]
         points = [Point(coor[0], coor[1], coor[2]) for coor in coors]
 
-    slices_x = Slices_x(X, Y, Z, points, slice_layer_x, feture_type)
-    slices_y = Slices_y(X, Y, Z, points, slice_layer_y, feture_type)
-    slices_z = Slices_z(X, Y, Z, points, slice_layer_z, feture_type)
+    slices_x = Slices_x(X, Y, Z, points, slice_number_x, feture_type)
+    slices_y = Slices_y(X, Y, Z, points, slice_number_y, feture_type)
+    slices_z = Slices_z(X, Y, Z, points, slice_number_z, feture_type)
     return slices_x.get_feature() + slices_y.get_feature() + slices_z.get_feature()
 
 
@@ -141,6 +141,6 @@ if __name__ == '__main__':
     print(X)
     print(Y)
 
-    os.chdir('../result')
-    np.save("X.npy", X, allow_pickle=True, fix_imports=True)
-    np.save("y.npy", Y, allow_pickle=True, fix_imports=True)
+    # os.chdir('../result')
+    # np.save("X.npy", X, allow_pickle=True, fix_imports=True)
+    # np.save("y.npy", Y, allow_pickle=True, fix_imports=True)
