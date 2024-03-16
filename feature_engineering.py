@@ -66,12 +66,9 @@ class Slices:
         for point in self.points:
             for i, slice in enumerate(slices):
                 if slice.is_inside(point):
-                    pass
-                elif slice.is_inside(point) and i+1 == len(slices):
-                    slices[i].points.add(point)
+                    slice.points.add(point)
                 else:
-                    slices[i - 1].points.add(point)
-                    break
+                    pass
 
 
 class Slices_x(Slices):
@@ -79,7 +76,7 @@ class Slices_x(Slices):
         super().__init__(X, Y, Z, points, slice_layer, feture_type)
 
     def get_feature(self):
-        slices_x = [Slice_x(self.Y_MIN + (i + 1) * self.Y_STEP) for i in range(self.slice_layer)]
+        slices_x = [Slice_x(self.X_MIN + (i + 1) * self.X_STEP) for i in range(self.slice_layer)]
         Slices_x.fill_points(self, slices_x)
 
         slices_x_den = [len(slice.points) / self.bbox_volume for slice in slices_x]
@@ -110,10 +107,40 @@ class Slices_z(Slices):
         return slices_z_den
 
 
+def get_feature(file_path, slice_layer_x, slice_layer_y, slice_layer_z, feture_type):
+    with open(file_path, mode="r") as file:
+        lines = [line.strip().split() for line in file.readlines()]
+        coors = np.array(lines).astype(float)
+        X, Y, Z = coors[:, 0], coors[:, 1], coors[:, 2]
+        points = [Point(coor[0], coor[1], coor[2]) for coor in coors]
 
-
-
+    slices_x = Slices_x(X, Y, Z, points, slice_layer_x, feture_type)
+    slices_y = Slices_y(X, Y, Z, points, slice_layer_y, feture_type)
+    slices_z = Slices_z(X, Y, Z, points, slice_layer_z, feture_type)
+    return slices_x.get_feature() + slices_y.get_feature() + slices_z.get_feature()
 
 
 if __name__ == '__main__':
-    pass
+    all_file_path = "../pointclouds-500"
+    file_names = os.listdir(all_file_path)
+    X = []  # 500 feature vectors
+    for i, file_name in enumerate(file_names):
+        file_path = f"{all_file_path}/{file_name}"
+        features = get_feature(file_path, 7, 7, 7, "both")
+        X.append(features)
+        # just to show the progress
+        if i % 50 == 0:
+            print(i)
+        elif i == 499:
+            print(i)
+
+    X = np.array(X)
+    Y = [0] * 100 + [1] * 100 + [2] * 100 + [3] * 100 + [4] * 100  # 500 labels
+    Y = np.array(Y)
+
+    print(X)
+    print(Y)
+
+    os.chdir('../result')
+    np.save("X.npy", X, allow_pickle=True, fix_imports=True)
+    np.save("y.npy", Y, allow_pickle=True, fix_imports=True)
