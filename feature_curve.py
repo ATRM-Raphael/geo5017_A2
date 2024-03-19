@@ -16,7 +16,7 @@ def get_result_2(feature_path, label_path):
     train_scores, test_scores = [], []
     for i in range(5):
         X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)
-        clf = svm.SVC(kernel='rbf', gamma=1.47e-11, C=1.21e7).fit(X_train, Y_train)
+        clf = svm.SVC(kernel='rbf', gamma=1e-10, C=1e10).fit(X_train, Y_train)
         pred_train, pred_test = clf.predict(X_train), clf.predict(X_test)
         train_score, test_score = accuracy_score(Y_train, pred_train), accuracy_score(Y_test, pred_test)
         train_scores.append(train_score), test_scores.append(test_score)
@@ -60,10 +60,10 @@ def get_result(all_file_path, file_names, slice_layer_x, slice_layer_y, slice_la
     return train_mean, test_mean, train_std, test_std
 
 
-def get_feature_curve(slices_number, train_error, test_error, train_std, test_std, title):
+def get_feature_curve(slices_number, train_error, test_error, train_std, test_std, title, show=True, save=False):
     # Plot the feature curve
     fig, ax = plt.subplots()
-    ax.plot(slices_number, train_error, linewidth=2.0, label="Training Error")
+    # ax.plot(slices_number, train_error, linewidth=2.0, label="Training Error")
     ax.plot(slices_number, test_error, linewidth=2.0, label="Test Error")
 
     train_error_min = []
@@ -78,20 +78,20 @@ def get_feature_curve(slices_number, train_error, test_error, train_std, test_st
             test_error_min.append(x)
             test_error_min.append(test)
 
-    plt.axvline(x=train_error_min[0], ymax=train_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
-    plt.axhline(y=train_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
-    plt.text(x, 0.9 * train_error_min[1],
-             f"Slices number: {train_error_min[0]}\nMin Train Error: {train_error_min[1]:.2f}",
-             fontsize=9, verticalalignment='bottom', horizontalalignment='right')
+    # plt.axvline(x=train_error_min[0], ymax=train_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
+    # plt.axhline(y=train_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
+    # plt.text(x, 0.9 * train_error_min[1],
+    #          f"Slices number: {train_error_min[0]}\nMin Train Error: {train_error_min[1]:.2f}",
+    #          fontsize=9, verticalalignment='bottom', horizontalalignment='right')
 
     plt.axvline(x=test_error_min[0], ymax=test_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
     plt.axhline(y=test_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
-    plt.text(test_error_min[0], 1.1 * test_error_min[1],
+    plt.text(test_error_min[0], test_error_min[1],
              f"Slices number: {test_error_min[0]}\nMin Test Error: {test_error_min[1]:.2f}",
              fontsize=9, verticalalignment='top', horizontalalignment='left')
 
     # Add the standard deviation as shading
-    plt.fill_between(slices_number, train_error - train_std, train_error + train_std, alpha=0.1)
+    # plt.fill_between(slices_number, train_error - train_std, train_error + train_std, alpha=0.1)
     plt.fill_between(slices_number, test_error - test_std, test_error + test_std, alpha=0.1)
 
     # Restrain the axis and labels
@@ -101,8 +101,10 @@ def get_feature_curve(slices_number, train_error, test_error, train_std, test_st
     plt.legend(loc='best')
     plt.title(title)
 
-    # Show the learning curve
-    plt.show()
+    if show:
+        plt.show()
+    if save:
+        plt.savefig("output.png", dpi=200)
 
 
 if __name__ == "__main__":
