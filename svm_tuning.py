@@ -88,7 +88,7 @@ def rbf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
 
 
 if __name__ == '__main__':
-    os.chdir("../result_win")
+    os.chdir("../result_both")
     X = np.load("X_11_34.npy")
     Y = np.load("y.npy")
     

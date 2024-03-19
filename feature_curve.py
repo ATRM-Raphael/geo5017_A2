@@ -43,7 +43,7 @@ def get_result(all_file_path, file_names, slice_layer_x, slice_layer_y, slice_la
     Y = [0] * 100 + [1] * 100 + [2] * 100 + [3] * 100 + [4] * 100
     Y = np.array(Y)
 
-    # Iterate 5 times to get the result of different SVM classifiers
+    # Iterate 5 times to get the result_both of different SVM classifiers
     train_scores, test_scores = [], []
     for i in range(5):
         X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)
@@ -110,9 +110,9 @@ def get_feature_curve(slices_number, train_error, test_error, train_std, test_st
 if __name__ == "__main__":
 
     all_file_path = "../pointclouds-500"
-    file_names = os.listdir(all_file_path)
+    file_names = sorted(os.listdir(all_file_path), key=lambda x: int(x.split('.')[0]))
 
-    all_result_path = "../result_win"
+    all_result_path = "../result_both"
 
     # Set the slices number of the features
     slices_number = list(np.logspace(start=1, stop=int(np.log(100) / np.log(1.25)), num=15, base=1.25))
@@ -128,9 +128,9 @@ if __name__ == "__main__":
         print(f"Slices number: {slice_number}")
         # By setting the different name of types, we can get the corresponding feature curve,
         # i.e., "number", "density", and "both".
-        # result = get_result(all_file_path, file_names, slice_number, slice_number, slice_number, "both")
-        result = get_result_2(f"{all_result_path}/X_{i}_{slice_number}.npy",
-                              f"{all_result_path}/y.npy")
+        result = get_result(all_file_path, file_names, slice_number, slice_number, slice_number, "both")
+        # result_both = get_result_2(f"{all_result_path}/X_{i}_{slice_number}.npy",
+        #                       f"{all_result_path}/y.npy")
         train_error.append(1 - result[0])
         test_error.append(1 - result[1])
         train_std.append(result[2])

@@ -139,12 +139,12 @@ def get_feature(file_path, slice_number_x, slice_number_y, slice_number_z, featu
 
 if __name__ == '__main__':
     all_file_path = "../pointclouds-500"
-    file_names = os.listdir(all_file_path)
+    file_names = sorted(os.listdir(all_file_path), key=lambda x: int(x.split('.')[0]))
 
     slices_number = list(np.logspace(start=1, stop=int(np.log(100) / np.log(1.25)), num=15, base=1.25))
     slices_number = [int(num) for num in slices_number]
 
-    os.chdir('../result_mac')
+    os.chdir('../result_both')
 
     for i in range(len(slices_number)):
         n = slices_number[i]
