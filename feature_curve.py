@@ -9,6 +9,26 @@ from feature_engineering import get_feature
 np.random.seed(101)
 
 
+def get_result_2(feature_path, label_path):
+    X = np.load(feature_path)
+    Y = np.load(label_path)
+
+    train_scores, test_scores = [], []
+    for i in range(5):
+        X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)
+        clf = svm.SVC(kernel='rbf', gamma=1e-10, C=1e10).fit(X_train, Y_train)
+        pred_train, pred_test = clf.predict(X_train), clf.predict(X_test)
+        train_score, test_score = accuracy_score(Y_train, pred_train), accuracy_score(Y_test, pred_test)
+        train_scores.append(train_score), test_scores.append(test_score)
+
+    # Get the final results of all the classifiers
+    train_mean = np.mean(train_scores)
+    train_std = np.std(train_scores)
+    test_mean = np.mean(test_scores)
+    test_std = np.std(test_scores)
+    return train_mean, test_mean, train_std, test_std
+
+
 def get_result(all_file_path, file_names, slice_layer_x, slice_layer_y, slice_layer_z, feature_type):
     # Retrieve the features and labels
 
@@ -87,8 +107,10 @@ def get_feature_curve(slices_number, train_error, test_error, train_std, test_st
 
 if __name__ == "__main__":
 
-    all_file_path = "/Users/boski/Library/Mobile Documents/com~apple~CloudDocs/Geomatics/5017_Machine Learning For The Built Environment/Assignments/A2/geo5017_A2/GEO5017-A2-Classification/pointclouds-500/pointclouds-500 copy"
+    all_file_path = "../pointclouds-500"
     file_names = os.listdir(all_file_path)
+
+    all_result_path = "../result_win"
 
     # Set the slices number of the features
     slices_number = list(np.logspace(start=1, stop=int(np.log(100) / np.log(1.25)), num=15, base=1.25))
@@ -99,11 +121,14 @@ if __name__ == "__main__":
     test_error = []
     train_std = []
     test_std = []
-    for i in slices_number:
-        print("Slices number: ", i)
+    for i in range(len(slices_number)):
+        slice_number = slices_number[i]
+        print(f"Slices number: {slice_number}")
         # By setting the different name of types, we can get the corresponding feature curve,
         # i.e., "number", "density", and "both".
-        result = get_result(all_file_path, file_names, i, i, i, "both")
+        # result = get_result(all_file_path, file_names, slice_number, slice_number, slice_number, "both")
+        result = get_result_2(f"{all_result_path}/X_{i}_{slice_number}.npy",
+                              f"{all_result_path}/y.npy")
         train_error.append(1 - result[0])
         test_error.append(1 - result[1])
         train_std.append(result[2])
