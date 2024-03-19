@@ -87,7 +87,7 @@ def get_feature_curve(slices_number, train_error, test_error, train_std, test_st
 
 if __name__ == "__main__":
 
-    all_file_path = "../pointclouds-500"
+    all_file_path = "/Users/boski/Library/Mobile Documents/com~apple~CloudDocs/Geomatics/5017_Machine Learning For The Built Environment/Assignments/A2/geo5017_A2/GEO5017-A2-Classification/pointclouds-500/pointclouds-500 copy"
     file_names = os.listdir(all_file_path)
 
     # Set the slices number of the features

@@ -132,21 +132,21 @@ print(f"Accuracy (Random Forest): {(rf_accuracy * 100):.2f}")
 # rf_mPCA = mean_per_class_accuracy(y_test, rf_pred)
 # print(f"Mean Per-Class Accuracy (Random Forest): {rf_mPCA:.2f}")
 #
-# # // CONFUSION MATRIX \\
-# # TODO: import assignment point cloud with the ground truth labels
-#
-# # # Confusion matrices plotting
-# # models = [('Polynomial Kernel SVM', poly_pred), ('RBF Kernel SVM', rbf_pred), ('Random Forest', rf_pred)]
-# # for (model_name, model_pred) in models:
-# #     plt.figure(figsize=(8, 6))
-# #     cm = confusion_matrix(y_test, model_pred)
-# #     sns.heatmap(cm, annot=True, fmt='d')
-#
-# #     plt.title(f'Confusion Matrix for {model_name}')
-# #     plt.xlabel('Predicted Label')
-# #     plt.ylabel('True Label')
-#
-# #     plt.show()
+# // CONFUSION MATRIX \\
+# TODO: import assignment point cloud with the ground truth labels
+
+# Confusion matrices plotting
+models = [('Polynomial Kernel SVM', poly_pred), ('RBF Kernel SVM', rbf_pred), ('Random Forest', rf_pred)]
+for (model_name, model_pred) in models:
+    plt.figure(figsize=(8, 6))
+    cm = confusion_matrix(y_test, model_pred)
+    sns.heatmap(cm, annot=True, fmt='d')
+
+    plt.title(f'Confusion Matrix for {model_name}')
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+
+    plt.show()
 #
 # # ---------------------------------
 # # ----------- PLOTTING ------------
@@ -175,9 +175,9 @@ print(f"Accuracy (Random Forest): {(rf_accuracy * 100):.2f}")
 # plt.tight_layout()
 # plt.show()
 #
-# # # Loading the iris dataset
-# # iris = sns.load_dataset("iris")
-# #
-# # # Creating a pair plot
-# # sns.pairplot(iris, hue="species", height=2.5)
-# # plt.show()
+# Loading the iris dataset
+iris = sns.load_dataset("iris")
+
+# Creating a pair plot
+sns.pairplot(iris, hue="species", height=2.5)
+plt.show()
