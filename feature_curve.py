@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import sklearn.model_selection as model_selection
 from sklearn import svm
 from sklearn.metrics import accuracy_score
+import sklearn.model_selection as model_selection
 from feature_engineering import get_feature
 
 np.random.seed(101)
@@ -27,8 +27,8 @@ def get_result(all_file_path, file_names, slice_layer_x, slice_layer_y, slice_la
     train_scores, test_scores = [], []
     for i in range(5):
         X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)
-        cls = svm.SVC(kernel='rbf', gamma=1e-10, C=1e10).fit(X_train, Y_train)
-        pred_train, pred_test = cls.predict(X_train), cls.predict(X_test)
+        clf = svm.SVC(kernel='rbf', gamma=1e-10, C=1e10).fit(X_train, Y_train)
+        pred_train, pred_test = clf.predict(X_train), clf.predict(X_test)
         train_score, test_score = accuracy_score(Y_train, pred_train), accuracy_score(Y_test, pred_test)
         train_scores.append(train_score), test_scores.append(test_score)
 
@@ -67,7 +67,7 @@ def get_feature_curve(slices_number, train_error, test_error, train_std, test_st
     plt.axvline(x=test_error_min[0], ymax=test_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
     plt.axhline(y=test_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
     plt.text(test_error_min[0], 1.1 * test_error_min[1],
-             f"Slices number: {test_error_min[0]}\nMin Train Error: {test:.2f}",
+             f"Slices number: {test_error_min[0]}\nMin Test Error: {test_error_min[1]:.2f}",
              fontsize=9, verticalalignment='top', horizontalalignment='left')
 
     # Add the standard deviation as shading
