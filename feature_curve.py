@@ -128,9 +128,9 @@ if __name__ == "__main__":
         print(f"Slices number: {slice_number}")
         # By setting the different name of types, we can get the corresponding feature curve,
         # i.e., "number", "density", and "both".
-        result = get_result(all_file_path, file_names, slice_number, slice_number, slice_number, "both")
-        # result_both = get_result_2(f"{all_result_path}/X_{i}_{slice_number}.npy",
-        #                       f"{all_result_path}/y.npy")
+        # result = get_result(all_file_path, file_names, slice_number, slice_number, slice_number, "both")
+        result = get_result_2(f"{all_result_path}/X_{i}_{slice_number}.npy",
+                              f"{all_result_path}/y.npy")
         train_error.append(1 - result[0])
         test_error.append(1 - result[1])
         train_std.append(result[2])
