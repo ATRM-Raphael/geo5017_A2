@@ -1,6 +1,5 @@
 import os
 import numpy as np
-from matplotlib import pyplot as plt
 
 
 class Point:
@@ -140,25 +139,29 @@ def get_feature(file_path, slice_number_x, slice_number_y, slice_number_z, featu
 
 if __name__ == '__main__':
     all_file_path = "../pointclouds-500"
-    file_names = os.listdir(all_file_path)
-    X = []  # 500 feature vectors
-    for i, file_name in enumerate(file_names):
-        file_path = f"{all_file_path}/{file_name}"
-        features = get_feature(file_path, 7, 7, 7, "both")
-        X.append(features)
-        # just to show the progress
-        if i % 50 == 0:
-            print(i)
-        elif i == 499:
-            print(i)
+    file_names = sorted(os.listdir(all_file_path), key=lambda x: int(x.split('.')[0]))
 
-    X = np.array(X)
+    slices_number = list(np.logspace(start=1, stop=int(np.log(100) / np.log(1.25)), num=15, base=1.25))
+    slices_number = [int(num) for num in slices_number]
+
+    os.chdir('../result_both')
+
+    for i in range(len(slices_number)):
+        n = slices_number[i]
+        print(f"Slice: {n}")
+        X = []  # 500 feature vectors
+        for j, file_name in enumerate(file_names):
+            file_path = f"{all_file_path}/{file_name}"
+            features = get_feature(file_path, n, n, n, "both")
+            X.append(features)
+            # just to show the progress
+            if j % 50 == 0:
+                print(j)
+            elif j == 499:
+                print(j)
+        X = np.array(X)
+        np.save(f"X_{i}_{n}.npy", X, allow_pickle=True, fix_imports=True)
+
     Y = [0] * 100 + [1] * 100 + [2] * 100 + [3] * 100 + [4] * 100  # 500 labels
     Y = np.array(Y)
-
-    print(X)
-    print(Y)
-
-    # os.chdir('../result')
-    # np.save("X.npy", X, allow_pickle=True, fix_imports=True)
-    # np.save("y.npy", Y, allow_pickle=True, fix_imports=True)
+    np.save("y.npy", Y, allow_pickle=True, fix_imports=True)
