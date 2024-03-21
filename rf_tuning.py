@@ -57,7 +57,7 @@ def rf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
 
 if __name__ == '__main__':
     os.chdir("../result_both")
-    X = np.load("X_11_34.npy")
+    X = np.load("X_4_4.npy")
     Y = np.load("y.npy")
 
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)

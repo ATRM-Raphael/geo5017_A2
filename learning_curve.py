@@ -10,10 +10,6 @@ np.random.seed(101)
 
 
 def get_learning_curve(X, Y, model, title='Title', check_interval=0.01, show=True, save=False):
-    random_index = np.random.permutation(len(Y))
-    X = X[random_index]
-    Y = Y[random_index]
-
     # initial results
     final_apparent_errors = []
     final_true_errors = []
@@ -31,6 +27,7 @@ def get_learning_curve(X, Y, model, title='Title', check_interval=0.01, show=Tru
         # split the train_size and test_size
         train_size = round((i + 1) * check_interval, decimal_place)
         test_size = round(1 - train_size, decimal_place)
+        print(train_size, test_size)
         X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y,
                                                                             train_size=train_size,
                                                                             test_size=test_size)
@@ -86,9 +83,10 @@ if __name__ == '__main__':
     X = np.load("X_11_34.npy")
     Y = np.load("y.npy")
 
-    svm_model = svm.SVC(kernel='poly', degree=2, C=1e9)
-    rf_model = RandomForestClassifier(n_estimators=142, min_samples_leaf=1)
+    svm_model = svm.SVC(kernel='rbf', gamma=1.83e-10, C=1e8)
+    rf_model = RandomForestClassifier(n_estimators=22, min_samples_leaf=1)
 
     svm_title = "Learning Curve (Best SVM)"
     rf_title = "Learning Curve (Best RF)"
-    get_learning_curve(X, Y, svm_model, title=svm_title, show=False, save=True)
+    # get_learning_curve(X, Y, svm_model, title=svm_title, show=False, save=True)
+    get_learning_curve(X, Y, rf_model, title=rf_title, show=False, save=True)

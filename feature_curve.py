@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from sklearn import svm
 from sklearn.metrics import accuracy_score
 import sklearn.model_selection as model_selection
-from feature_engineering import get_feature
 
 np.random.seed(101)
 
@@ -91,10 +90,10 @@ if __name__ == "__main__":
         train_std.append(result[2])
         test_std.append(result[3])
 
-    title = "Feature Curve (Both)"
+    title = "Feature Curve (Point number + Point density)"
 
     train_error = np.array(train_error)
     test_error = np.array(test_error)
     train_std = np.array(train_std)
     test_std = np.array(test_std)
-    get_feature_curve(slices_number, test_error, test_std, title, show=True, save=False)
+    get_feature_curve(slices_number, test_error, test_std, title, show=False, save=True)

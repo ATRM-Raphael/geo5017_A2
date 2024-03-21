@@ -24,11 +24,11 @@ class UrbanObject:
 
     def is_inside(self, slice_type, point, slice_index):
         if slice_type == 'x':
-            return point.x < self.X_MIN + (slice_index + 1) * self.X_STEP
+            return self.X_MIN + slice_index * self.X_STEP <= point.x < self.X_MIN + (slice_index + 1) * self.X_STEP
         elif slice_type == 'y':
-            return point.y < self.Y_MIN + (slice_index + 1) * self.Y_STEP
+            return self.Y_MIN + slice_index * self.Y_STEP <= point.y < self.Y_MIN + (slice_index + 1) * self.Y_STEP
         elif slice_type == 'z':
-            return point.z < self.Z_MIN + (slice_index + 1) * self.Z_STEP
+            return self.Z_MIN + slice_index * self.Z_STEP <= point.z < self.Z_MIN + (slice_index + 1) * self.Z_STEP
 
     def fill_points(self, slices, slice_type):
         for point in self.points:

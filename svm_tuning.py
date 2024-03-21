@@ -16,9 +16,13 @@ def gridsearch(X_train, X_test, Y_train, Y_test, c_range, second_range, kernel):
     pred_test_best = 0
     results_grid = []
 
-    for second in second_range:
+    for i in range(len(second_range)):
+        print(f"Iteration: {i}/{len(second_range)}")
+        second = second_range[i]
         results_row = []
-        for c in c_range:
+        for j in range(len(c_range)):
+            c = c_range[j]
+            print(f"iteration_c: {j}")
             cls = svm.SVC()
             if kernel == 'poly':
                 cls = svm.SVC(kernel='poly', degree=second, C=c).fit(X_train, Y_train)
@@ -38,7 +42,8 @@ def gridsearch(X_train, X_test, Y_train, Y_test, c_range, second_range, kernel):
 
 
 def poly_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
-    c_range = list(np.logspace(start=-5, stop=14, num=20, base=10))
+    # poly kernel's c_range is stop at 1e10, to decrease the computation complex.
+    c_range = list(np.logspace(start=-5, stop=10, num=20, base=10))
     degree_range = list(np.arange(start=1, stop=21, step=1))
     degree_range.reverse()
 
@@ -103,9 +108,9 @@ def rbf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
 
 if __name__ == '__main__':
     os.chdir("../result_both")
-    X = np.load("X_11_34.npy")
+    X = np.load("X_4_4.npy")
     Y = np.load("y.npy")
-    
+
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)
-    poly_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False)
-    rbf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False)
+    poly_gridsearch(X_train, X_test, Y_train, Y_test, show=False, save=True)
+    # rbf_gridsearch(X_train, X_test, Y_train, Y_test, show=False, save=True)
