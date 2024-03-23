@@ -111,6 +111,5 @@ if __name__ == '__main__':
     X = np.load("X_4_4.npy")
     Y = np.load("y.npy")
 
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)
     poly_gridsearch(X_train, X_test, Y_train, Y_test, show=False, save=True)
     # rbf_gridsearch(X_train, X_test, Y_train, Y_test, show=False, save=True)

@@ -1,23 +1,24 @@
-import os
+import matplotlib.pyplot as plt
 import numpy as np
-from sklearn import svm, datasets
-import sklearn.model_selection as model_selection
-# from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import f1_score
+import os
+import pandas as pd
+import seaborn as sns
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
+from sklearn.model_selection import cross_val_score, GridSearchCV, model_selection
 from sklearn.preprocessing import LabelEncoder
 
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import classification_report
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import GridSearchCV
+import learning_curve
+import svm_tuning
+import rf_tuning
+import feature_curve
+import feature_engineering
 
-import seaborn as sns
-import pandas as pd
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
+# ---------------------------------
+# 1.---- FILE PREPARATION ---------
+# ---------------------------------
 
 def assign_label(filename):
     # Extract the base name and convert to an integer to assign labels
@@ -53,10 +54,11 @@ def load_point_cloud_data(folder_path):
 # // LOAD THE DATASET HERE \\
 
 # Specify the path to your folder
-folder_path = 'GEO5017-A2-Classification/pointclouds-500/pointclouds-500-cropped/'
+folder_path = '../pointclouds-500/pointclouds-500-cropped/'
 point_cloud_data = load_point_cloud_data(folder_path)
 
 # # -- Visualise the data --
+# # >> WARNING: Computationally heavy
 # fig = plt.figure()
 # ax = fig.add_subplot(111, projection='3d')
 # categories = point_cloud_data['label'].unique()
@@ -79,16 +81,19 @@ y_encoded = le.fit_transform(y)
 
 # // Data training vs. test split \\ #
 # TODO: Tweak parameters to explore different results
-X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y_encoded, train_size=0.60, test_size=0.40,
+train_size = 0.6
+test_size = 0.4
+
+X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y_encoded, train_size, test_size,
                                                                     random_state=101)
 
 # ---------------------------------
-# 3.-- EVALUATION AND ANALYSIS ----
+# 2.--- PREPARATION AND TUNING ----
 # ---------------------------------
 
 # // MODEL TRAINING AND TESTING \\
 
-# -- Support Vector Machine --
+# -- Support Vector Machine -- use sklearn
 poly = svm.SVC(kernel="poly", degree=3, C=1).fit(X_train, y_train)
 rbf = svm.SVC(kernel="rbf", gamma=0.5, C=0.1).fit(X_train, y_train)
 
@@ -97,30 +102,61 @@ rbf_pred = rbf.predict(X_test)
 
 # -- Random Forest with Hyperparameter Tuning--
 
-# Define the parameter grid for GridSearchCV
-param_grid = {
-    'n_estimators': [100, 200],  # Number of trees in the random forest
-    'max_features': ['auto', 'sqrt'],  # Number of features to consider at every split
-    'max_depth': [None, 10, 20],  # Maximum number of levels in tree
-}
+def rf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
+    n_estimators_range = list(np.arange(start=2, stop=200, step=10))
+    n_estimators_range.reverse()
+    min_samples_leaf_range = list(np.arange(start=1, stop=20, step=1))
 
-# Initialize a base Random Forest model
-rf_base = RandomForestClassifier()
+    best_estimators = 0
+    best_min_samples_leaf = 0
+    rf_accuracy_best = 0
+    rf_pred_best = 0
+    rf_accuracy_grid = []
 
-# Set up the grid search with cross-validation
-grid_search_rf = GridSearchCV(estimator=rf_base, param_grid=param_grid, cv=3, n_jobs=-1, verbose=2)
+    for n_estimators in n_estimators_range:
+        rf_accuracy_row = []
+        for min_samples_leaf in min_samples_leaf_range:
+            rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf).fit(X_train, Y_train)
+            rf_pred = rf.predict(X_test)
+            rf_accuracy = accuracy_score(Y_test, rf_pred)
+            rf_accuracy_row.append(rf_accuracy)
+            if rf_accuracy > rf_accuracy_best:
+                rf_accuracy_best = rf_accuracy
+                best_estimators = n_estimators
+                best_min_samples_leaf = min_samples_leaf
+                rf_pred_best = rf_pred
+        rf_accuracy_grid.append(rf_accuracy_row)
 
-# Fit the grid search to the data
-grid_search_rf.fit(X_train, y_train)
+    if show:
+        print(f"Best Estimators: {best_estimators}")
+        print(f"Best Min samples leaf: {best_min_samples_leaf}")
+        print(f"Highest accuracy: {rf_accuracy_best}")
 
-# Retrieve the best Random Forest model from grid search
-rf_best = grid_search_rf.best_estimator_
+        # Display the confusion matrix for the best model
+        cf = confusion_matrix(Y_test, rf_pred_best)
+        print("Confusion Matrix for the best Random Forest model:")
+        print(cf)
 
-# Make predictions with the best model
-rf_pred = rf_best.predict(X_test)
+        fig, ax = plt.subplots(figsize=(8, 8))
+        colorbar = plt.imshow(rf_accuracy_grid, cmap='coolwarm')
+        plt.colorbar(colorbar)
+        plt.title('The Accuracy and Hyper-parameters (random forest)')
+        plt.xticks(ticks=range(len(min_samples_leaf_range)), labels=[f"{m:.3g}" for m in min_samples_leaf_range])
+        plt.yticks(ticks=range(len(n_estimators_range)), labels=[f"{n:.3g}" for n in n_estimators_range])
+        plt.xlabel('Min sample leafs')
+        plt.ylabel('N estimators')
+        if show:
+            plt.show()
+        if save:
+            fig.savefig('../figures/rf_tuning.png', dpi=200)
 
-# Print the best parameters found by GridSearchCV
-print("Best parameters found by grid search:", grid_search_rf.best_params_)
+    return best_estimators, best_min_samples_leaf, rf_accuracy_best, rf_pred_best
+
+best_estimators, best_min_samples_leaf, rf_accuracy_best, rf_pred_best = rf_gridsearch(X_train, X_test, y_train, y_test)
+
+# ---------------------------------
+# 3.-- EVALUATION AND ANALYSIS ----
+# ---------------------------------
 
 # // OVERALL ACCURACY \\
 
@@ -130,7 +166,7 @@ print(f"Accuracy (Polynomial Kernel): {(poly_accuracy * 100):.2f}")
 rbf_accuracy = accuracy_score(y_test, rbf_pred)
 print(f"Accuracy (RBF Kernel): {(rbf_accuracy * 100):.2f}")
 
-rf_accuracy = accuracy_score(y_test, rf_pred)
+rf_accuracy = accuracy_score(y_test, rf_pred_best)
 print(f"Accuracy (Random Forest with tuning): {(rf_accuracy * 100):.2f}")
 
 
@@ -155,7 +191,7 @@ print(f"Mean Per-Class Accuracy (Polynomial Kernel): {poly_mPCA:.2f}")
 rbf_mPCA = mean_per_class_accuracy(y_test, rbf_pred)
 print(f"Mean Per-Class Accuracy (RBF Kernel): {rbf_mPCA:.2f}")
 
-rf_mPCA = mean_per_class_accuracy(y_test, rf_pred)
+rf_mPCA = mean_per_class_accuracy(y_test, rf_pred_best)
 print(f"Mean Per-Class Accuracy (Random Forest with tuning): {rf_mPCA:.2f}")
 
 # // K-FOLD CROSS-VALIDATION\\
@@ -182,7 +218,7 @@ print(
 # TODO: import assignment point cloud with the ground truth labels
 
 # Confusion matrices plotting
-models = [('Polynomial Kernel SVM', poly_pred), ('RBF Kernel SVM', rbf_pred), ('Random Forest', rf_pred)]
+models = [('Polynomial Kernel SVM', poly_pred), ('RBF Kernel SVM', rbf_pred), ('Random Forest', rf_pred_best)]
 for (model_name, model_pred) in models:
     plt.figure(figsize=(8, 6))
     cm = confusion_matrix(y_test, model_pred)
@@ -194,16 +230,16 @@ for (model_name, model_pred) in models:
 
     plt.show()
 
-# // CLASSIFICATION REPORTS \\
-
-print("Detailed classification report for Polynomial Kernel SVM:")
-print(classification_report(y_test, poly_pred))
-
-print("Detailed classification report for RBF Kernel SVM:")
-print(classification_report(y_test, rbf_pred))
-
-print("Detailed classification report for Random Forest:")
-print(classification_report(y_test, rf_pred))
+# # // CLASSIFICATION REPORTS \\
+#
+# print("Detailed classification report for Polynomial Kernel SVM:")
+# print(classification_report(y_test, poly_pred))
+#
+# print("Detailed classification report for RBF Kernel SVM:")
+# print(classification_report(y_test, rbf_pred))
+#
+# print("Detailed classification report for Random Forest:")
+# print(classification_report(y_test, rf_pred_best))
 
 # # ---------------------------------
 # # ----------- PLOTTING ------------
