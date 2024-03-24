@@ -89,4 +89,4 @@ if __name__ == '__main__':
     svm_title = "Learning Curve (Best SVM)"
     rf_title = "Learning Curve (Best RF)"
     # get_learning_curve(X, Y, svm_model, title=svm_title, show=False, save=True)
-    get_learning_curve(X, Y, rf_model, title=rf_title, show=False, save=True)
+    get_learning_curve(X, Y, rf_model, title=rf_title, show=True, save=True)

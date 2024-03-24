@@ -9,7 +9,7 @@ from sklearn.metrics import confusion_matrix
 np.random.seed(101)
 
 
-def rf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
+def rf_gridsearch(X_train, X_test, y_train, y_test, show=True, save=False):
     n_estimators_range = list(np.arange(start=2, stop=200, step=10))
     n_estimators_range.reverse()
     min_samples_leaf_range = list(np.arange(start=1, stop=20, step=1))
@@ -23,10 +23,11 @@ def rf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
     for n_estimators in n_estimators_range:
         rf_accuracy_row = []
         for min_samples_leaf in min_samples_leaf_range:
-            rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf).fit(X_train, Y_train)
+            rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf).fit(X_train, y_train)
             rf_pred = rf.predict(X_test)
-            rf_accuracy = accuracy_score(Y_test, rf_pred)
+            rf_accuracy = accuracy_score(y_test, rf_pred)
             rf_accuracy_row.append(rf_accuracy)
+
             if rf_accuracy > rf_accuracy_best:
                 rf_accuracy_best = rf_accuracy
                 best_estimators = n_estimators
@@ -38,7 +39,7 @@ def rf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
           f"Best Min samples leaf: {best_min_samples_leaf}\n"
           f"Highest accuracy: {rf_accuracy_best}")
 
-    cf = confusion_matrix(Y_test, rf_pred_best)
+    cf = confusion_matrix(y_test, rf_pred_best)
     print(f"Confusion Matrix:\n{cf}")
 
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -54,11 +55,13 @@ def rf_gridsearch(X_train, X_test, Y_train, Y_test, show=True, save=False):
     if save:
         fig.savefig('../figures/rf_tuning.png', dpi=200)
 
+    return best_estimators, best_min_samples_leaf, rf_accuracy_best, rf_pred_best
+
 
 if __name__ == '__main__':
     os.chdir("../result_both")
     X = np.load("X_4_4.npy")
-    Y = np.load("y.npy")
+    y = np.load("Y.npy")
 
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)
-    rf_gridsearch(X_train, X_test, Y_train, Y_test, show=False, save=True)
+    X_train, X_test, Y_train, y_test = model_selection.train_test_split(X, y, train_size=0.6, test_size=0.4)
+    rf_gridsearch(X_train, X_test, Y_train, y_test, show=False, save=True)
