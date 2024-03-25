@@ -98,7 +98,7 @@ def rbf_gridsearch(X_train, X_test, Y_train, y_test, show=True, save=False):
     fig, ax = plt.subplots(figsize=(8, 8))
     cb = plt.imshow(results_grid, cmap='coolwarm')
     plt.colorbar(cb)
-    plt.title('The Accuracy and Hyper-parameters (poly)')
+    plt.title('The Accuracy and Hyper-parameters (rbf)')
     plt.xticks(ticks=range(len(c_range)), labels=[f"{c:.3g}" for c in c_range])
     plt.yticks(ticks=range(len(gamma_range)), labels=[f"{gamma:.3g}" for gamma in gamma_range])
     plt.xticks(rotation=270)

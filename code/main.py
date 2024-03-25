@@ -17,6 +17,9 @@ import rf_tuning
 import feature_curve
 import feature_engineering
 
+np.random.seed(101)
+
+
 #  ____    ___   _  _____      _     ____
 # | ___|  / _ \ / ||___  |    / \   |___ \
 # |___ \ | | | || |   / /    / _ \    __) |
@@ -31,6 +34,7 @@ import feature_engineering
 def ensure_dir(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
+
 
 def assign_label(filename):
     # Extract the base name and convert to an integer to assign labels
@@ -84,9 +88,14 @@ ensure_dir(figures_path)
 # fig = plt.figure()
 # ax = fig.add_subplot(111, projection='3d')
 # categories = point_cloud_data['label'].unique()
+#
+# # Adjust the size of the points using the 's' parameter
+# point_size = 2  # You can modify this value as needed
+#
 # for category in categories:
 #     subset = point_cloud_data[point_cloud_data['label'] == category]
-#     ax.scatter(subset['x'], subset['y'], subset['z'], label=category)
+#     ax.scatter(subset['x'], subset['y'], subset['z'], s=point_size, label=category)
+#
 # ax.legend()
 # ax.set_xlabel('X')
 # ax.set_ylabel('Y')
@@ -103,25 +112,25 @@ ensure_dir(figures_path)
 slices_number = list(np.logspace(start=1, stop=int(np.log(100) / np.log(1.25)), num=15, base=1.25))
 slices_number = [int(num) for num in slices_number]
 
-# for i in range(len(slices_number)):
-#     n = slices_number[i]
-#     print(f"Slice: {n}")
-#     X = []  # 500 feature vectors
-#     for j, file_name in enumerate(xyz_files_sorted):
-#         file_path = os.path.join(folder_path, file_name)
-#         features = feature_engineering.get_all_features(file_path, n, "both")
-#         X.append(features)
-#         # Just to show the progress
-#         if j % 50 == 0 or j == len(xyz_files_sorted) - 1:
-#             print(f"Processed file {j + 1}: {file_name}")
-#     X = np.array(X)
-#     np.save(f"{all_results_path}/X_{i}_{n}.npy", X, allow_pickle=True, fix_imports=True)
+for i in range(len(slices_number)):
+    n = slices_number[i]
+    print(f"Slice: {n}")
+    X = []  # 500 feature vectors
+    for j, file_name in enumerate(xyz_files_sorted):
+        file_path = os.path.join(folder_path, file_name)
+        features = feature_engineering.get_all_features(file_path, n, "both")
+        X.append(features)
+        # Just to show the progress
+        if j % 50 == 0 or j == len(xyz_files_sorted) - 1:
+            print(f"Processed file {j + 1}: {file_name}")
+    X = np.array(X)
+    np.save(f"{all_results_path}/X_{i}_{n}.npy", X, allow_pickle=True, fix_imports=True)
 
-# # -- fix this to make the code more dynamic and robust
-# y = point_cloud_data['label']
-# le = LabelEncoder()  # Use numerical indexing, in case it is required
-# y_encoded = le.fit_transform(y)
-# np.save(f"{all_results_path}/y.npy", y_encoded, allow_pickle=True, fix_imports=True)
+# -- fix this to make the code more dynamic and robust
+y = point_cloud_data['label']
+le = LabelEncoder()  # Use numerical indexing, in case it is required
+y_encoded = le.fit_transform(y)
+np.save(f"{all_results_path}/y.npy", y_encoded, allow_pickle=True, fix_imports=True)
 
 # -- hardcoded labels
 Y = [0] * 100 + [1] * 100 + [2] * 100 + [3] * 100 + [4] * 100  # 500 labels
@@ -167,8 +176,8 @@ y = np.load("../result_both/y.npy")
 
 # // Data training vs. test split \\ #
 # TODO: Tweak parameters to explore different results
-train_size = 0.6
-test_size = 0.4
+train_size = 0.7
+test_size = 0.3
 
 X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, train_size=train_size, test_size=test_size,
                                                                     random_state=101)
@@ -176,8 +185,6 @@ X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, train_
 # ---------------------------------
 # 3.--- PREPARATION AND TUNING ----
 # ---------------------------------
-
-np.random.seed(101)
 
 # // SVM TUNING OF HYPER PARAMETERS \\
 print("SVM Tuning: Poly")
@@ -205,6 +212,11 @@ rf_best_estimators, rf_best_min_samples_leaf, rf_accuracy_best, rf_pred_best = r
 print("\n")
 
 # -- SUMMARY --
+
+print("SUMMARY:\n"
+      f"Training size: {train_size}\n"
+      f"Test size: {test_size}\n")
+
 print(f">> SVM POLY:\n"
       f"POLY: Best Accuracy: {poly_accuracy_best}\n"
       f"Best C Value: {poly_c_best}\n"
@@ -300,7 +312,7 @@ print("\n")
 poly_model_cv = svm.SVC(kernel="poly", degree=poly_degree_best, C=poly_c_best)
 rbf_model_cv = svm.SVC(kernel="rbf", gamma=rbf_gamma_best, C=rbf_c_best)
 rf_model_cv = RandomForestClassifier(n_estimators=rf_best_estimators, min_samples_leaf=rf_best_min_samples_leaf,
-                                 random_state=101)
+                                     random_state=101)
 
 # Perform k-fold cross-validation for each model and print the results
 score_poly_cv = cross_val_score(poly_model_cv, X, y, cv=5)
