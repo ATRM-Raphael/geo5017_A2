@@ -80,7 +80,7 @@ def get_learning_curve(X, Y, model, title='Title', check_interval=0.01, show=Tru
 
 if __name__ == '__main__':
     os.chdir("../result_both")
-    X = np.load("X_11_34.npy")
+    X = np.load("X_4_4.npy")
     Y = np.load("y.npy")
 
     svm_model = svm.SVC(kernel='rbf', gamma=1.83e-10, C=1e8)
@@ -88,5 +88,5 @@ if __name__ == '__main__':
 
     svm_title = "Learning Curve (Best SVM)"
     rf_title = "Learning Curve (Best RF)"
-    # get_learning_curve(X, Y, svm_model, title=svm_title, show=False, save=True)
+    get_learning_curve(X, Y, svm_model, title=svm_title, show=True, save=True)
     get_learning_curve(X, Y, rf_model, title=rf_title, show=True, save=True)

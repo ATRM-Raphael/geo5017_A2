@@ -88,9 +88,6 @@ all_results_path = "../result_both"
 slices_number = list(np.logspace(start=1, stop=int(np.log(100) / np.log(1.25)), num=15, base=1.25))
 slices_number = [int(num) for num in slices_number]
 
-most_optimal_slice_i = []
-most_optimal_slice_n = []
-
 for i in range(len(slices_number)):
     n = slices_number[i]
     print(f"Slice: {n}")
@@ -105,11 +102,13 @@ for i in range(len(slices_number)):
     X = np.array(X)
     np.save(f"{all_results_path}/X_{i}_{n}.npy", X, allow_pickle=True, fix_imports=True)
 
+# # -- fix this to make the code more dynamic and robust
 # y = point_cloud_data['label']
 # le = LabelEncoder()  # Use numerical indexing, in case it is required
 # y_encoded = le.fit_transform(y)
 # np.save(f"{all_results_path}/y.npy", y_encoded, allow_pickle=True, fix_imports=True)
 
+# -- hardcoded labels
 Y = [0] * 100 + [1] * 100 + [2] * 100 + [3] * 100 + [4] * 100  # 500 labels
 Y = np.array(Y)
 np.save(f"{all_results_path}/y.npy", Y, allow_pickle=True, fix_imports=True)
@@ -146,7 +145,8 @@ optimal_slice_number = slices_number[min_test_error_idx]
 optimal_features_filename = f"{all_results_path}/X_{min_test_error_idx}_{optimal_slice_number}.npy"
 
 # Define X - features, AND y - labels:
-X = np.load("../result_both/optimal_features_filename")
+# X = np.load("../result_both/X_4_4.npy")
+X = np.load(optimal_features_filename)
 y = np.load("../result_both/y.npy")
 # y = point_cloud_data['label']
 
@@ -165,23 +165,29 @@ X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, train_
 np.random.seed(101)
 
 # // SVM TUNING OF HYPER PARAMETERS \\
+print("SVM Tuning: Poly")
 poly_accuracy_best, poly_c_best, poly_degree_best, poly_pred_test_best, poly_results_grid = svm_tuning.poly_gridsearch(
     X_train, X_test, y_train, y_test, False, False)
+print("\n")
 
+print("SVM Tuning: RBF")
 rbf_accuracy_best, rbf_c_best, rbf_gamma_best, rbf_pred_test_best, rbf_results_grid = svm_tuning.rbf_gridsearch(X_train,
                                                                                                                 X_test,
                                                                                                                 y_train,
                                                                                                                 y_test,
                                                                                                                 False,
                                                                                                                 False)
+print("\n")
 
 # // RANDOM FOREST TUNING OF HYPER PARAMETERS \\
+print("RF Tuning")
 rf_best_estimators, rf_best_min_samples_leaf, rf_accuracy_best, rf_pred_best = rf_tuning.rf_gridsearch(X_train,
                                                                                                        X_test,
                                                                                                        y_train,
                                                                                                        y_test,
                                                                                                        True,
                                                                                                        False)
+print("\n")
 
 # -- SUMMARY --
 print(f">> SVM POLY:\n"
@@ -281,9 +287,9 @@ rbf_model_cv = svm.SVC(kernel="rbf", gamma=rbf_gamma_best, C=rbf_c_best)
 rf_model_cv = RandomForestClassifier()
 
 # Perform k-fold cross-validation for each model and print the results
-score_poly_cv = cross_val_score(poly_model_cv, X, y_encoded, cv=5)
-score_rbf_cv = cross_val_score(rbf_model_cv, X, y_encoded, cv=5)
-score_rf_cv = cross_val_score(rf_model_cv, X, y_encoded, cv=5)
+score_poly_cv = cross_val_score(poly_model_cv, X, y, cv=5)
+score_rbf_cv = cross_val_score(rbf_model_cv, X, y, cv=5)
+score_rf_cv = cross_val_score(rf_model_cv, X, y, cv=5)
 
 # Output the mean and standard deviation of the cross-validation scores for each model
 print(
@@ -296,7 +302,6 @@ print(
 print("\n")
 
 # // CONFUSION MATRIX \\
-# TODO: import assignment point cloud with the ground truth labels
 
 # Confusion matrices plotting
 models = [('Polynomial Kernel SVM', poly_pred), ('RBF Kernel SVM', rbf_pred), ('Random Forest', rf_pred)]
@@ -324,5 +329,15 @@ for (model_name, model_pred) in models:
 # print(classification_report(y_test, rf_pred))
 
 # # ---------------------------------
-# # ----------- PLOTTING ------------
+# # ------ PLOT LEARNING CURVE ------
 # # ---------------------------------
+
+svm_title = "Learning Curve (SVM: POLY)"
+rbf_title = "Learning Curve (SVM: RBF)"
+rf_title = "Learning Curve (RF)"
+
+learning_curve.get_learning_curve(X, Y, poly, title=svm_title, show=True, save=True)
+
+learning_curve.get_learning_curve(X, Y, rbf, title=rbf_title, show=True, save=True)
+
+learning_curve.get_learning_curve(X, y, rf_base, title=rf_title, show=True, save=True)
