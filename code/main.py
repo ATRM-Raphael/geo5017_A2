@@ -27,6 +27,11 @@ import feature_engineering
 # 1.---- FILE PREPARATION ---------
 # ---------------------------------
 
+# Define a utility function to create directories if they don't exist
+def ensure_dir(directory_path):
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+
 def assign_label(filename):
     # Extract the base name and convert to an integer to assign labels
     base_name = int(filename.split('.')[0])
@@ -68,6 +73,11 @@ def load_point_cloud_data(folder_path):
 folder_path = '../pointclouds-500'
 point_cloud_data, xyz_files_sorted = load_point_cloud_data(folder_path)
 all_results_path = "../result_both"
+figures_path = "../figures"
+
+# Ensure the existence of required directories
+ensure_dir(all_results_path)
+ensure_dir(figures_path)
 
 # # -- Visualise the data --
 # # >> WARNING: Computationally heavy
@@ -93,19 +103,19 @@ all_results_path = "../result_both"
 slices_number = list(np.logspace(start=1, stop=int(np.log(100) / np.log(1.25)), num=15, base=1.25))
 slices_number = [int(num) for num in slices_number]
 
-for i in range(len(slices_number)):
-    n = slices_number[i]
-    print(f"Slice: {n}")
-    X = []  # 500 feature vectors
-    for j, file_name in enumerate(xyz_files_sorted):
-        file_path = os.path.join(folder_path, file_name)
-        features = feature_engineering.get_all_features(file_path, n, "both")
-        X.append(features)
-        # Just to show the progress
-        if j % 50 == 0 or j == len(xyz_files_sorted) - 1:
-            print(f"Processed file {j + 1}: {file_name}")
-    X = np.array(X)
-    np.save(f"{all_results_path}/X_{i}_{n}.npy", X, allow_pickle=True, fix_imports=True)
+# for i in range(len(slices_number)):
+#     n = slices_number[i]
+#     print(f"Slice: {n}")
+#     X = []  # 500 feature vectors
+#     for j, file_name in enumerate(xyz_files_sorted):
+#         file_path = os.path.join(folder_path, file_name)
+#         features = feature_engineering.get_all_features(file_path, n, "both")
+#         X.append(features)
+#         # Just to show the progress
+#         if j % 50 == 0 or j == len(xyz_files_sorted) - 1:
+#             print(f"Processed file {j + 1}: {file_name}")
+#     X = np.array(X)
+#     np.save(f"{all_results_path}/X_{i}_{n}.npy", X, allow_pickle=True, fix_imports=True)
 
 # # -- fix this to make the code more dynamic and robust
 # y = point_cloud_data['label']
@@ -158,7 +168,7 @@ y = np.load("../result_both/y.npy")
 # // Data training vs. test split \\ #
 # TODO: Tweak parameters to explore different results
 train_size = 0.6
-test_size = 1 - train_size
+test_size = 0.4
 
 X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, train_size=train_size, test_size=test_size,
                                                                     random_state=101)
@@ -289,7 +299,8 @@ print("\n")
 # Initialize untrained model instances for cross-validation
 poly_model_cv = svm.SVC(kernel="poly", degree=poly_degree_best, C=poly_c_best)
 rbf_model_cv = svm.SVC(kernel="rbf", gamma=rbf_gamma_best, C=rbf_c_best)
-rf_model_cv = RandomForestClassifier()
+rf_model_cv = RandomForestClassifier(n_estimators=rf_best_estimators, min_samples_leaf=rf_best_min_samples_leaf,
+                                 random_state=101)
 
 # Perform k-fold cross-validation for each model and print the results
 score_poly_cv = cross_val_score(poly_model_cv, X, y, cv=5)
@@ -319,8 +330,8 @@ for (model_name, model_pred) in models:
     plt.xlabel('Predicted Label')
     plt.ylabel('True Label')
 
-    # plt.show()
-    cm_fig.savefig(f'../figures/ConfusionMatrix_{model_name}.png', dpi=200)
+    # Using `figures_path` to save the figure
+    cm_fig.savefig(f'{figures_path}/ConfusionMatrix_{model_name}.png', dpi=200)
 
 # # // CLASSIFICATION REPORTS \\
 #
@@ -341,8 +352,8 @@ svm_title = "Learning Curve (SVM: POLY)"
 rbf_title = "Learning Curve (SVM: RBF)"
 rf_title = "Learning Curve (RF)"
 
-learning_curve.get_learning_curve(X, Y, poly, title=svm_title, show=False, save=True)
+learning_curve.get_learning_curve(X, y, poly, title=svm_title, show=False, save=True)
 
-learning_curve.get_learning_curve(X, Y, rbf, title=rbf_title, show=False, save=True)
+learning_curve.get_learning_curve(X, y, rbf, title=rbf_title, show=False, save=True)
 
 learning_curve.get_learning_curve(X, y, rf_base, title=rf_title, show=False, save=True)
