@@ -17,6 +17,11 @@ import rf_tuning
 import feature_curve
 import feature_engineering
 
+#  ____    ___   _  _____      _     ____
+# | ___|  / _ \ / ||___  |    / \   |___ \
+# |___ \ | | | || |   / /    / _ \    __) |
+#  ___) || |_| || |  / /    / ___ \  / __/
+# |____/  \___/ |_| /_/    /_/   \_\|_____|
 
 # ---------------------------------
 # 1.---- FILE PREPARATION ---------
@@ -136,7 +141,7 @@ train_error = np.array(train_error)
 test_error = np.array(test_error)
 train_std = np.array(train_std)
 test_std = np.array(test_std)
-feature_curve.get_feature_curve(slices_number, test_error, test_std, title_fc, show=True, save=True)
+feature_curve.get_feature_curve(slices_number, test_error, test_std, title_fc, show=False, save=True)
 
 # // SAVE THE RESULT WITH THE LOWEST TEST ERROR \\
 min_test_error_idx = np.argmin(test_error)
@@ -145,7 +150,7 @@ optimal_slice_number = slices_number[min_test_error_idx]
 optimal_features_filename = f"{all_results_path}/X_{min_test_error_idx}_{optimal_slice_number}.npy"
 
 # Define X - features, AND y - labels:
-# X = np.load("../result_both/X_4_4.npy")
+# X = np.load("../result_both/X_4_4.npy") # For testing purposes
 X = np.load(optimal_features_filename)
 y = np.load("../result_both/y.npy")
 # y = point_cloud_data['label']
@@ -167,7 +172,7 @@ np.random.seed(101)
 # // SVM TUNING OF HYPER PARAMETERS \\
 print("SVM Tuning: Poly")
 poly_accuracy_best, poly_c_best, poly_degree_best, poly_pred_test_best, poly_results_grid = svm_tuning.poly_gridsearch(
-    X_train, X_test, y_train, y_test, False, False)
+    X_train, X_test, y_train, y_test, False, True)
 print("\n")
 
 print("SVM Tuning: RBF")
@@ -176,7 +181,7 @@ rbf_accuracy_best, rbf_c_best, rbf_gamma_best, rbf_pred_test_best, rbf_results_g
                                                                                                                 y_train,
                                                                                                                 y_test,
                                                                                                                 False,
-                                                                                                                False)
+                                                                                                                True)
 print("\n")
 
 # // RANDOM FOREST TUNING OF HYPER PARAMETERS \\
@@ -185,8 +190,8 @@ rf_best_estimators, rf_best_min_samples_leaf, rf_accuracy_best, rf_pred_best = r
                                                                                                        X_test,
                                                                                                        y_train,
                                                                                                        y_test,
-                                                                                                       True,
-                                                                                                       False)
+                                                                                                       False,
+                                                                                                       True)
 print("\n")
 
 # -- SUMMARY --
@@ -336,8 +341,8 @@ svm_title = "Learning Curve (SVM: POLY)"
 rbf_title = "Learning Curve (SVM: RBF)"
 rf_title = "Learning Curve (RF)"
 
-learning_curve.get_learning_curve(X, Y, poly, title=svm_title, show=True, save=True)
+learning_curve.get_learning_curve(X, Y, poly, title=svm_title, show=False, save=True)
 
-learning_curve.get_learning_curve(X, Y, rbf, title=rbf_title, show=True, save=True)
+learning_curve.get_learning_curve(X, Y, rbf, title=rbf_title, show=False, save=True)
 
-learning_curve.get_learning_curve(X, y, rf_base, title=rf_title, show=True, save=True)
+learning_curve.get_learning_curve(X, y, rf_base, title=rf_title, show=False, save=True)
