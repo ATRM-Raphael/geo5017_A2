@@ -72,7 +72,8 @@ def get_all_features(file_path, slice_number, feature_type):
 
 
 if __name__ == '__main__':
-    all_file_path = "../pointclouds-500"
+    # all_file_path = '../pointclouds-500'
+    all_file_path = '/Users/boski/Library/Mobile Documents/com~apple~CloudDocs/Geomatics/5017_Machine Learning For The Built Environment/Assignments/A2/geo5017_A2/pointclouds-500'
     file_names = sorted(os.listdir(all_file_path), key=lambda x: int(x.split('.')[0]))
 
     # these numbers come from the feature_curve.py, us these to generate all corresponding feature files,
@@ -80,7 +81,7 @@ if __name__ == '__main__':
     slices_number = list(np.logspace(start=1, stop=int(np.log(100) / np.log(1.25)), num=15, base=1.25))
     slices_number = [int(num) for num in slices_number]
 
-    os.chdir('../result_both')
+    os.chdir('/Users/boski/Library/Mobile Documents/com~apple~CloudDocs/Geomatics/5017_Machine Learning For The Built Environment/Assignments/A2/geo5017_A2/result_both')
 
     for i in range(len(slices_number)):
         n = slices_number[i]

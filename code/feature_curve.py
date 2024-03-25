@@ -11,14 +11,14 @@ np.random.seed(101)
 # This method reads X and Y directly from pre-saved npy files.
 def get_result(feature_path, label_path):
     X = np.load(feature_path)
-    Y = np.load(label_path)
+    y = np.load(label_path)
 
     train_scores, test_scores = [], []
     for i in range(5):
-        X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, train_size=0.6, test_size=0.4)
-        clf = svm.SVC(kernel='rbf', gamma=1e-10, C=1e10).fit(X_train, Y_train)
+        X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, train_size=0.6, test_size=0.4)
+        clf = svm.SVC(kernel='rbf', gamma=1e-10, C=1e10).fit(X_train, y_train)
         pred_train, pred_test = clf.predict(X_train), clf.predict(X_test)
-        train_score, test_score = accuracy_score(Y_train, pred_train), accuracy_score(Y_test, pred_test)
+        train_score, test_score = accuracy_score(y_train, pred_train), accuracy_score(y_test, pred_test)
         train_scores.append(train_score), test_scores.append(test_score)
 
     # Get the final results of all the classifiers
@@ -41,6 +41,8 @@ def get_feature_curve(slices_number, test_error, test_std, title, show=True, sav
         if test == min(test_error) and len(test_error_min) == 0:
             test_error_min.append(x)
             test_error_min.append(test)
+
+    # -- PLOT --
 
     plt.axvline(x=test_error_min[0], ymax=test_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
     plt.axhline(y=test_error_min[1], color='gray', linestyle='--', linewidth=0.5, alpha=0.7)
@@ -84,7 +86,7 @@ if __name__ == "__main__":
         slice_number = slices_number[i]
         print(f"Slices number: {slice_number}")
         result = get_result(f"{all_result_path}/X_{i}_{slice_number}.npy",
-                              f"{all_result_path}/y.npy")
+                            f"{all_result_path}/y.npy")
         train_error.append(1 - result[0])
         test_error.append(1 - result[1])
         train_std.append(result[2])
@@ -96,4 +98,4 @@ if __name__ == "__main__":
     test_error = np.array(test_error)
     train_std = np.array(train_std)
     test_std = np.array(test_std)
-    get_feature_curve(slices_number, test_error, test_std, title, show=False, save=True)
+    get_feature_curve(slices_number, test_error, test_std, title, show=True, save=True)
